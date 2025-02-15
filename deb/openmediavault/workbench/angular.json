@@ -60,6 +60,7 @@
               "node_modules/@siemens/ngx-datatable/index.scss",
               "node_modules/@siemens/ngx-datatable/assets/icons.css",
               "node_modules/ngx-toastr/toastr.css",
+              "src/assets/styles/style.scss",
               "src/styles.scss"
             ],
             "stylePreprocessorOptions": {

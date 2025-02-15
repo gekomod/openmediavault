@@ -164,20 +164,21 @@ export class TaskDialogComponent implements OnInit, OnDestroy {
           hidden: false,
           disabled: false,
           autofocus: false,
-          class: 'omv-background-color-pair-primary'
+          class: 'bg-primary'
         },
         stop: {
           text: gettext('Stop'),
           hidden: false,
           disabled: true,
           autofocus: false,
-          class: 'omv-background-color-pair-red'
+          class: 'bg-warning'
         },
         close: {
           text: gettext('Close'),
           hidden: false,
           disabled: false,
           autofocus: false,
+          class: 'bg-indigo',
           dialogResult: false
         }
       }

@@ -27,7 +27,7 @@ import {
 } from '@angular/core';
 import { AbstractControl, FormControl } from '@angular/forms';
 import { MatFormField } from '@angular/material/form-field';
-import { MatSelectionListChange } from '@angular/material/list';
+import { MatLegacySelectionListChange as MatSelectionListChange } from '@angular/material/legacy-list';
 import * as _ from 'lodash';
 import { EMPTY, from, Observable, Subject, Subscription } from 'rxjs';
 import { catchError, concatMap, map, startWith, takeUntil, tap, toArray } from 'rxjs/operators';

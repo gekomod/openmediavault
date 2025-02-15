@@ -35,9 +35,9 @@ export class AppComponent {
     this.prefersColorSchemeService.change$.subscribe(
       (prefersColorScheme: PrefersColorScheme): void => {
         if (prefersColorScheme === 'dark') {
-          this.renderer2.addClass(document.body, 'omv-dark-theme');
+          this.renderer2.addClass(document.body, 'dark-theme');
         } else {
-          this.renderer2.removeClass(document.body, 'omv-dark-theme');
+          this.renderer2.removeClass(document.body, 'dark-theme');
         }
       }
     );

@@ -28,6 +28,7 @@ import { marker as gettext } from '@ngneat/transloco-keys-manager/marker';
 import * as _ from 'lodash';
 import { Subscription } from 'rxjs';
 
+import { PageContext } from '~/app/core/components/intuition/models/page.type';
 import {
   flattenFormFieldConfig,
   setupConfObjUuidFields
@@ -56,6 +57,9 @@ export class FormComponent implements AfterViewInit, OnInit {
 
   @Input()
   config: FormFieldConfig[];
+
+  @Input()
+  pageContext: PageContext = {};
 
   @Input()
   context = {};
@@ -272,7 +276,7 @@ export class FormComponent implements AfterViewInit, OnInit {
             validators.push(
               CustomValidators.constraint(
                 custom.constraint,
-                this.context,
+                this.pageContext,
                 custom.errorCode,
                 custom.errorData
               )
@@ -285,8 +289,8 @@ export class FormComponent implements AfterViewInit, OnInit {
       }
       let value = _.defaultTo(field.value, null);
       if (_.isString(value)) {
-        // Evaluate filters.
-        value = format(value, {});
+        // Evaluate filters and apply page context.
+        value = format(value, this.pageContext);
       }
       // Create the form control.
       controlsConfig[field.name] = new FormControl(
@@ -354,7 +358,7 @@ export class FormComponent implements AfterViewInit, OnInit {
     // those of disabled form fields as well. `values` is outdated at
     // that moment because the event we are handling has not bubbled up
     // to the form yet.
-    const values = _.merge({}, this.context, this.formGroup.getRawValue());
+    const values = _.merge({}, this.pageContext, this.formGroup.getRawValue());
     // If there is a constraint specified, then test it, otherwise assume
     // the condition of the modifier is fulfilled. This is the case when
     // the `deps` property is specified.

@@ -23,13 +23,11 @@ import * as _ from 'lodash';
 import { EMPTY, Subscription } from 'rxjs';
 import { catchError, debounceTime, finalize } from 'rxjs/operators';
 
-import {
-  AbstractPageComponent,
-  PageContext
-} from '~/app/core/components/intuition/abstract-page-component';
+import { AbstractPageComponent } from '~/app/core/components/intuition/abstract-page-component';
 import { FormComponent } from '~/app/core/components/intuition/form/form.component';
 import {
   flattenFormFieldConfig,
+  formatFormFieldConfig,
   setupConfObjUuidFields
 } from '~/app/core/components/intuition/functions.helper';
 import { FormFieldName } from '~/app/core/components/intuition/models/form.type';
@@ -39,6 +37,7 @@ import {
   FormPageButtonConfig,
   FormPageConfig
 } from '~/app/core/components/intuition/models/form-page-config.type';
+import { PageContext } from '~/app/core/components/intuition/models/page.type';
 import { Unsubscribe } from '~/app/decorators';
 import { format, formatDeep, isFormatable, toBoolean } from '~/app/functions.helper';
 import { translate } from '~/app/i18n.helper';
@@ -222,11 +221,13 @@ export class FormPageComponent
    * Sets the form values.
    *
    * @param values The values to be set.
+   * @param markAsPristine Mark the form as pristine after patching the
+   *   values. Defaults to `true`.
    */
   setFormValues(values: FormValues, markAsPristine = true): void {
     this.form.formGroup.patchValue(values);
     if (markAsPristine) {
-      this.form.formGroup.markAsPristine();
+      this.markAsPristine();
     }
   }
 
@@ -513,13 +514,11 @@ export class FormPageComponent
     }
     // Inject the route configuration and parameters into various form
     // field configuration properties.
-    _.forEach(allFields, (fieldConfig: FormFieldConfig) => {
-      _.forEach(['store.proxy', 'store.filters', 'value', 'request.params'], (path) => {
-        const value = _.get(fieldConfig, path);
-        if (isFormatable(value)) {
-          _.set(fieldConfig, path, formatDeep(value, this.pageContext));
-        }
-      });
-    });
+    formatFormFieldConfig(allFields, this.pageContext, [
+      'store.proxy',
+      'store.filters',
+      'value',
+      'request.params'
+    ]);
   }
 }

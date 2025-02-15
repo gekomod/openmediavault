@@ -37,12 +37,16 @@ import { TitleService } from '~/app/shared/services/title.service';
 import { SharedModule } from '~/app/shared/shared.module';
 import { TranslocoRootModule } from '~/app/transloco-root.module';
 
+import { FeatherModule } from 'angular-feather';
+import { allIcons } from 'angular-feather/icons';
+
 @NgModule({
   declarations: [AppComponent],
   imports: [
     HttpClientModule,
     BrowserModule,
     BrowserAnimationsModule,
+    FeatherModule.pick(allIcons),
     CoreModule.forRoot(),
     SharedModule,
     ToastrModule.forRoot({

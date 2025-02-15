@@ -9,19 +9,19 @@
   }
 }
 
-.mat-form-field + .mat-form-field {
+.mat-mdc-form-field + .mat-form-field {
   padding-left: 12px;
 }
 
 .cdk-overlay-pane {
   .mat-toolbar.omv-selection-header {
-    .mat-form-field {
+    .mat-mdc-form-field {
       font-size: var(--mat-font-size-body-1);
 
       &.mat-focused {
         color: theme.$omv-color-primary;
       }
-
+      /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
       .mat-form-field-infix {
         padding-bottom: unset;
       }
@@ -38,6 +38,6 @@
   }
 }
 
-.mat-select-panel {
+.mat-mdc-select-panel {
   max-height: 50vh;
 }

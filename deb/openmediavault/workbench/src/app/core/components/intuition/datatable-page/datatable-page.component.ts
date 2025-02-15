@@ -22,15 +22,13 @@ import * as _ from 'lodash';
 import { concat } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
-import {
-  AbstractPageComponent,
-  PageContext
-} from '~/app/core/components/intuition/abstract-page-component';
+import { AbstractPageComponent } from '~/app/core/components/intuition/abstract-page-component';
 import { FormDialogComponent } from '~/app/core/components/intuition/form-dialog/form-dialog.component';
 import { DatatablePageActionConfig } from '~/app/core/components/intuition/models/datatable-page-action-config.type';
 import { DatatablePageConfig } from '~/app/core/components/intuition/models/datatable-page-config.type';
 import { DatatablePageButtonConfig } from '~/app/core/components/intuition/models/datatable-page-config.type';
 import { FormFieldConfig } from '~/app/core/components/intuition/models/form-field-config.type';
+import { PageContext } from '~/app/core/components/intuition/models/page.type';
 import { format, formatDeep, isFormatable } from '~/app/functions.helper';
 import { translate } from '~/app/i18n.helper';
 import {
@@ -39,6 +37,7 @@ import {
 } from '~/app/shared/components/datatable/datatable.component';
 import { ModalDialogComponent } from '~/app/shared/components/modal-dialog/modal-dialog.component';
 import { TaskDialogComponent } from '~/app/shared/components/task-dialog/task-dialog.component';
+import { TaskDialogSshComponent } from '~/app/shared/components/task-dialog-ssh/task-dialog-ssh.component';
 import { Icon } from '~/app/shared/enum/icon.enum';
 import { NotificationType } from '~/app/shared/enum/notification-type.enum';
 import { DatatableAction } from '~/app/shared/models/datatable-action.type';
@@ -254,6 +253,31 @@ export class DatatablePageComponent extends AbstractPageComponent<DatatablePageC
             if (res) {
               if (_.isString(taskDialog.successUrl)) {
                 this.navigate(taskDialog.successUrl);
+              } else {
+                this.reloadData();
+              }
+            }
+          });
+          break;
+        case 'taskDialogSsh':
+          const taskDialogSsh = _.cloneDeep(action.execute.taskDialogSsh);
+          // Process tokenized configuration properties.
+          _.forEach(['request.params'], (path) => {
+            const value = _.get(taskDialogSsh.config, path);
+            if (isFormatable(value)) {
+              _.set(taskDialogSsh.config, path, formatDeep(value, this.pageContext));
+            }
+          });
+          const dialog_ssh = this.dialogService.open(TaskDialogSshComponent, {
+            width: _.get(taskDialogSsh.config, 'width', '75%'),
+            data: _.omit(taskDialogSsh.config, ['width'])
+          });
+          dialog_ssh.afterClosed().subscribe((res) => {
+            // Navigate to the configured URL or reload the datatable,
+            // but only if the dialog close input is `true`.
+            if (res) {
+              if (_.isString(taskDialogSsh.successUrl)) {
+                this.navigate(taskDialogSsh.successUrl);
               } else {
                 this.reloadData();
               }
