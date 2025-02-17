@@ -58,16 +58,9 @@ export type TaskDialogSshConfig = {
     stop?: TaskDialogSshButtonConfig;
     close?: TaskDialogSshButtonConfig;
   };
-  request?: {
+  command?: {
     // The name of the RPC service.
-    service: string;
-    // The name of the RPC. This RPC must return the file name that
-    // is used to communicate with the background task.
-    method: string;
-    // Additional parameters.
     params?: Record<string, any>;
-    // Number of retry attempts before failing.
-    maxRetries?: number;
   };
 };
 

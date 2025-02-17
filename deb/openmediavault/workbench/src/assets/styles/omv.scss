@@ -602,6 +602,7 @@ html {
 }
 
 //omv-background-color-pair-
+//omv-background-color-pair-green
 
 html {
   --mat-sys-primary: rgb(93, 135, 255);
@@ -619,46 +620,46 @@ html {
   background-color:var(--mat-sys-primary) !important;
 }
 .omv-background-color-pair-secondary {
-  background-color:#777e89
+  background-color:#777e89 !important;
 }
-.omv-background-color-pair-success {
-  background-color:#00c292
+.omv-background-color-pair-success, .omv-background-color-pair-light-green {
+  background-color:#00c292 !important;
 }
 .omv-background-color-pair-error {
   background-color:var(--mat-sys-error) !important;
 }
 .omv-background-color-pair-info {
-  background-color:#03c9d7
+  background-color:#03c9d7 !important;
 }
-.omv-background-color-pair-warning {
-  background-color:#fec90f
+.omv-background-color-pair-warning, omv-background-color-pair-light-yellow {
+  background-color:#fec90f !important;
 }
 .omv-background-color-pair-danger {
-  background-color:#e46a76
+  background-color:#e46a76 !important;
 }
 .omv-background-color-pair-indigo {
-  background-color:#551a8b
+  background-color:#551a8b !important;
 }
 .omv-background-color-pair-light {
-  background-color:#4952581f
+  background-color:#4952581f !important;
 }
 .omv-background-color-pair-dark {
-  background-color:#000000de
+  background-color:#000000de !important;
 }
 .omv-background-color-pair-muted {
-  background-color:#949db2
+  background-color:#949db2 !important;
 }
 .omv-background-color-pair-white {
-  background-color:#fff
+  background-color:#fff !important;
 }
 .omv-background-color-pair-black {
-  background-color:#000
+  background-color:#000 !important;
 }
 .omv-background-color-pair-light-primary {
-  background-color:#fcf1ed
+  background-color:#fcf1ed !important;
 }
 .omv-background-color-pair-light-info {
-  background-color:#f7f8f7
+  background-color:#f7f8f7 !important;
 }
 
 .mat-mdc-icon-button {

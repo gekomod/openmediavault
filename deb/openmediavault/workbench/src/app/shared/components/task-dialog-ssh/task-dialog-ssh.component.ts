@@ -29,18 +29,17 @@ import {
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { marker as gettext } from '@ngneat/transloco-keys-manager/marker';
 import * as _ from 'lodash';
-import { from, of, Subscription } from 'rxjs';
-import { concatMap, delay, finalize, tap } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import stripAnsi from 'strip-ansi';
 
 import { format } from '~/app/functions.helper';
 import { Icon } from '~/app/shared/enum/icon.enum';
 import { TaskDialogSshConfig } from '~/app/shared/models/task-dialog-ssh-config.type';
 import { AuthSessionService } from '~/app/shared/services/auth-session.service';
-import { RpcBgResponse, RpcService } from '~/app/shared/services/rpc.service';
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
-
+import { WebLinksAddon } from '@xterm/addon-web-links';
+import { io, Socket } from 'socket.io-client';
 
 /**
  * A dialog with 'Start', 'Stop' and 'Cancel' buttons. It will
@@ -53,6 +52,11 @@ import { FitAddon } from "@xterm/addon-fit";
   encapsulation: ViewEncapsulation.None
 })
 export class TaskDialogSshComponent implements OnInit, OnDestroy {
+  @ViewChild('terminal', { static: true }) terminalDiv!: ElementRef;
+  private socket: Socket;
+  private term: Terminal;
+  private inputBuffer: string = '';
+
   @Output()
   readonly finishEvent = new EventEmitter<string>();
 
@@ -64,24 +68,19 @@ export class TaskDialogSshComponent implements OnInit, OnDestroy {
   public config: TaskDialogSshConfig = {};
   public running = false;
   private subscription: Subscription;
-  private filename: string;
 
   constructor(
     private authSessionService: AuthSessionService,
-    private rpcService: RpcService,
     @Inject(MAT_DIALOG_DATA) data: TaskDialogSshConfig
   ) {
     this.config = data;
     this.sanitizeConfig();
+    this.socket = io('http://192.168.1.22:1122', { }); // Połączenie z serwerem Socket.IO    
   }
 
- ngOnInit(): void {    
-
-   const term = new Terminal({ cursorBlink: true, convertEol: true,disableStdin: false});
-   const fitAddon = new FitAddon();
-    term.loadAddon(fitAddon);
-    term.open(document.getElementById("terminal")!);
-    fitAddon.fit();
+  ngOnInit(): void {
+    this.initializeTerminal();
+    this.connectToWebSocket();
 
     if (this.config.startOnInit) {
       this.onStart();
@@ -100,8 +99,53 @@ export class TaskDialogSshComponent implements OnInit, OnDestroy {
     }
   }
 
+  private initializeTerminal(): void {
+    this.term = new Terminal();
+    const fitAddon = new FitAddon();
+    const webLinksAddon = new WebLinksAddon();
+
+    this.term.loadAddon(fitAddon);
+    this.term.loadAddon(webLinksAddon);
+
+    this.term.open(document.getElementById('terminal'));
+    fitAddon.fit();
+
+    // Obsługa danych wprowadzanych przez użytkownika
+    this.term.onData((data) => {
+      if (data === '\r') { // Wykrywanie naciśnięcia Enter
+        this.sendInputToServer();
+      } else {
+        this.inputBuffer += data; // Dodawanie znaków do bufora
+        this.term.write(data); // Wyświetlanie znaków w terminalu
+      }
+    });
+  }
+
+  private connectToWebSocket(): void {
+    this.socket.on('connect', () => {
+      this.term.write('Połączono z serwerem SSH\r\n');
+    });
+
+    this.socket.on('output', (data: string) => {
+      this.term.write(data); // Wyświetlanie odpowiedzi z serwera
+    });
+
+    this.socket.on('disconnect', () => {
+      this.term.write('\r\nPołączenie z serwerem SSH zamknięte\r\n');
+    });
+  }
+
+  private sendInputToServer(): void {
+    if (this.socket && this.socket.connected) {
+      this.socket.emit('input', this.inputBuffer); // Wysyłanie danych do serwera
+      this.inputBuffer = ''; // Czyszczenie bufora
+    }
+  }
+
   ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
+    if (this.socket) {
+      this.socket.disconnect();
+    }
   }
 
   onStart() {
@@ -111,56 +155,10 @@ export class TaskDialogSshComponent implements OnInit, OnDestroy {
     this.config.buttons.close.dialogResult = false;
     this.content.nativeElement.innerHTML = '';
     this.running = true;
-    this.subscription = this.rpcService
-      .requestTaskOutput(
-        this.config.request.service,
-        this.config.request.method,
-        this.config.request.params,
-        undefined,
-        undefined,
-        this.config.request.maxRetries
-      )
-      .pipe(
-        tap((res: RpcBgResponse) => (this.filename = res.filename)),
-        finalize(() => {
-          this.running = false;
-          this.config.buttons.start.disabled = false;
-          this.config.buttons.stop.disabled = true;
-          this.config.buttons.close.disabled = false;
-        })
-      )
-      .subscribe({
-        next: (value: RpcBgResponse) => {
-          this.print(value.output, true);
-        },
-        error: () => {
-          this.printTypeWriter('** CONNECTION LOST **');
-        },
-        complete: () => {
-          // Set the result value to `true` because the request finished
-          // successfully.
-          this.config.buttons.close.dialogResult = true;
-          // Notify all subscribers.
-          this.finishEvent.emit(this.content.nativeElement.innerHTML);
-          // Append EOL message.
-          if (this.config.showCompletion) {
-            this.printTypeWriter('END OF LINE');
-          }
-        }
-      });
   }
 
   onStop(): void {
     this.subscription?.unsubscribe();
-    this.rpcService
-      .stopTask(this.filename)
-      .pipe(
-        finalize(() => {
-          this.config.buttons.start.disabled = false;
-          this.config.buttons.stop.disabled = true;
-        })
-      )
-      .subscribe();
   }
 
   protected sanitizeConfig(): void {
@@ -224,13 +222,5 @@ export class TaskDialogSshComponent implements OnInit, OnDestroy {
     if (this.config.autoScroll && _.isFunction(nativeEl.scroll) && doScroll) {
       nativeEl.scroll({ behavior: 'auto', top: nativeEl.scrollHeight });
     }
-  }
-
-  private printTypeWriter(text: string): void {
-    from(['<br>', ...text, '<br><span class="omv-text-blink">█</span>'])
-      .pipe(concatMap((value) => of(value).pipe(delay(25))))
-      .subscribe((value) => {
-        this.print(value);
-      });
   }
 }

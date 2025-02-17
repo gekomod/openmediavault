@@ -9,7 +9,7 @@
   </mat-form-code-editor>
   <mat-error *ngIf="formGroup.invalid">
     <span *ngIf="formGroup.hasError('required', config.name)">
-      {{ 'This field is required.' | transloco }}
+      {{ 'This field is required.' | transloco | template:pageContext }}
     </span>
     <span *ngIf="formGroup.hasError('constraint', config.name)">
       {{ formGroup.getError('constraint', config.name) | transloco }}
@@ -19,6 +19,6 @@
     </span>
   </mat-error>
   <mat-hint *ngIf="config.hint?.length > 0"
-            [innerHTML]="config.hint | transloco | sanitizeHtml">
+            [innerHTML]="config.hint | transloco | template:pageContext | sanitizeHtml">
   </mat-hint>
 </mat-form-field>

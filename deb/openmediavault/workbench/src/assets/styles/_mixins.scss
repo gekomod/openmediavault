@@ -5,6 +5,8 @@
 $color-array:("primary": $primary,
   "secondary": $secondary,
   "success": $success,
+  "green": $success,
+  "yellow": $warning,
   "info": $info,
   "error": $error,
   "warning": $warning,
@@ -27,6 +29,10 @@ $color-value in $color-array {
   }
 
   .bg-#{$color-name}, .alert-#{$color-name} {
+    background-color: $color-value !important;
+  }
+
+  .omv-background-color-pair-light-#{$color-name} {
     background-color: $color-value !important;
   }
 

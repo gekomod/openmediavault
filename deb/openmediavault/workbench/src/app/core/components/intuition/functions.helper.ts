@@ -40,16 +40,30 @@ export const flattenFormFieldConfig = (fields: Array<FormFieldConfig>): Array<Fo
     }
   );
 
+/**
+ * Helper function to format the specified tokenized form field properties.
+ * @param fields The list of form fields.
+ * @param pageContext The page context.
+ * @param props The list of tokenized properties to format.
+ * @param convertFn The function that is used to convert the formatted string.
+ *   E.g. this can be used to convert `string` to `boolean`.
+ */
+
 export const formatFormFieldConfig = (
   fields: Array<FormFieldConfig>,
   pageContext: PageContext,
-  paths: Array<string>
+  props: Array<string>,
+  convertFn?: any
 ): void => {
-  _.forEach(fields, (fieldConfig: FormFieldConfig) => {
-    _.forEach(paths, (path) => {
-      const value = _.get(fieldConfig, path);
+  _.forEach(fields, (field: FormFieldConfig) => {
+    _.forEach(props, (prop) => {
+      const value = _.get(field, prop);
       if (isFormatable(value)) {
-        _.set(fieldConfig, path, formatDeep(value, pageContext));
+        let newValue = formatDeep(value, pageContext);
+        if (_.isFunction(convertFn)) {
+          newValue = convertFn(newValue);
+        }
+        _.set(field, prop, newValue);
       }
     });
   });
